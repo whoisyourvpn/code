@@ -20,6 +20,8 @@ def main():
                         seen_ips.add(ip)
                         f.write(ip + '\n')
                         f.flush()
+                    else:
+                        print('Skipping...')  # Output "skipping..." if IP is duplicated
                 except requests.exceptions.RequestException as e:
                     print(f'An error occurred: {e}')
                 time.sleep(5)  # pause for 5 seconds between requests
