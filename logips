@@ -1,0 +1,25 @@
+import requests
+import time
+from tqdm import tqdm
+
+def get_ip():
+    response = requests.get('http://whatismyip.akamai.com/')
+    return response.text.strip()
+
+def main():
+    seen_ips = set()
+    with open('ips.txt', 'a') as f:
+        for _ in tqdm(iter(int, 1)):  # infinite loop with visual output
+            try:
+                ip = get_ip()
+                if ip not in seen_ips:
+                    print(f'New IP found: {ip}')
+                    seen_ips.add(ip)
+                    f.write(ip + '\n')
+                    f.flush()
+            except requests.exceptions.RequestException as e:
+                print(f'An error occurred: {e}')
+            time.sleep(5)  # pause for 5 seconds between requests
+
+if __name__ == "__main__":
+    main()
