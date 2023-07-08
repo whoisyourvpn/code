@@ -9,17 +9,23 @@ def get_ip():
 def main():
     seen_ips = set()
     with open('ips.txt', 'a') as f:
-        for _ in tqdm(iter(int, 1)):  # infinite loop with visual output
-            try:
-                ip = get_ip()
-                if ip not in seen_ips:
-                    print(f'New IP found: {ip}')
-                    seen_ips.add(ip)
-                    f.write(ip + '\n')
-                    f.flush()
-            except requests.exceptions.RequestException as e:
-                print(f'An error occurred: {e}')
-            time.sleep(5)  # pause for 5 seconds between requests
+        f.write('Start\n')  # Annotating start of the script
+        f.flush()
+        try:
+            for _ in tqdm(iter(int, 1)):  # infinite loop with visual output
+                try:
+                    ip = get_ip()
+                    if ip not in seen_ips:
+                        print(f'New IP found: {ip}')
+                        seen_ips.add(ip)
+                        f.write(ip + '\n')
+                        f.flush()
+                except requests.exceptions.RequestException as e:
+                    print(f'An error occurred: {e}')
+                time.sleep(5)  # pause for 5 seconds between requests
+        except KeyboardInterrupt:
+            f.write('Stop\n')  # Annotating stop of the script
+            f.flush()
 
 if __name__ == "__main__":
     main()
