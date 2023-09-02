@@ -7,16 +7,18 @@ function searchForIP() {
 
   for (var i = 0; i < values.length; i++) {
     // Assuming IPs are in the first column, change 0 to another index if they are in another column
-    if (values[i][0].toString().startsWith('185.102.219.')) {
+    if (values[i][0].toString().startsWith('143.244.45.')) {
       results.push(values[i]);
     }
   }
 
-  // Output results, this can be customized based on your needs
+  // Output results to console
   if (results.length > 0) {
-    var outputSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Search Results');
-    outputSheet.getRange(1, 1, results.length, results[0].length).setValues(results);
+    console.log("Matching IP addresses found:");
+    for (var i = 0; i < results.length; i++) {
+      console.log(results[i][0]);
+    }
   } else {
-    SpreadsheetApp.getUi().alert('No matching IP addresses found.');
+    console.log('No matching IP addresses found.');
   }
 }
