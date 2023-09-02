@@ -40,7 +40,7 @@ async def fetch_all_ips(writer, start_ip, end_ip, subnet):
 subnet = input("Enter subnet to scan (example: 198.7.61.): ")
 start_ip = int(input("Enter the first IP to scan (0-255): "))
 
-filename = subnet.replace('.', '-') + 'csv'
+filename = subnet.replace('.', '-') + '.csv'
 logging.basicConfig(filename='debug.log', level=logging.DEBUG)
 
 with open(filename, 'a', newline='') as file:
