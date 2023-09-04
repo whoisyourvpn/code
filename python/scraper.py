@@ -75,7 +75,7 @@ if __name__ == "__main__":
         writer.writerow(['ip', 'name'])
         continue_processing = True
 
-        while continue_processing and start_ip < 256:
+        while start_ip < 256:
             myvpn = r"us.protonvpn.net.udp.ovpn"
             VPN("connect", myvpn)
             WaitUntilVPNConnected()
@@ -86,7 +86,3 @@ if __name__ == "__main__":
             VPN("disconnect", myvpn)
             start_ip = end_ip
 
-            if end_ip < 256:
-                user_input = input("Processing completed for this batch of 15 IPs. Hit any key to continue or type 'exit' to stop processing: ")
-                if user_input.lower() == 'exit':
-                    continue_processing = False
