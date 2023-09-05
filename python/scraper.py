@@ -1,67 +1,45 @@
-import time
+import subprocess
 import csv
 import asyncio
 import aiohttp
-import logging
-import subprocess
-import requests
 from bs4 import BeautifulSoup
+import requests
+import logging
+import time
 
-def VPN(action, myvpn=None):
-    openvpn_gui_path = r"C:\Program Files\OpenVPN\bin\openvpn-gui.exe"
-    valid_actions = ["connect", "disconnect", "reconnect", "status"]
-    if action in valid_actions:
-        if myvpn:
-            command = f'"{openvpn_gui_path}" --command {action} "{myvpn}"'
-        else:
-            command = f'"{openvpn_gui_path}" --command {action}'
-        subprocess.Popen(command, shell=True)
-    else:
-        print("Invalid action:", action)
+def protonvpn_connect():
+    command = "protonvpn-cli c -r"
+    subprocess.run(command, shell=True)
 
 def PublicIPAddress():
-    try:
-        response = requests.get("http://whatismyip.akamai.com/")
-        return response.text.strip()
-    except:
-        return "Unable to fetch public IP"
+    response = requests.get("http://whatismyip.akamai.com/")
+    return response.text.strip()
 
 def WaitUntilVPNConnected():
-    print("Waiting for VPN to connect...")
     time.sleep(20)
     public_ip = PublicIPAddress()
-    if public_ip != "Unable to fetch public IP":
-        print(f"Connected with public IP: {public_ip}")
-    else:
-        print("VPN not connected")
+    print(f"Connected with public IP: {public_ip}")
 
 async def process_ip(session, writer, ip, url):
-    try:
-        async with session.get(url, timeout=30) as response:
-            if response.status == 429:
-                print(f"{ip}, Rate limit exceeded")
-                logging.error(f"{ip}, Rate limit exceeded")
-                await asyncio.sleep(10)
-                return
-            content = await response.text()
-            soup = BeautifulSoup(content, "html.parser")
-            h1_tag = soup.find("h1", class_="ddc mb-3 text-left")
-            if h1_tag:
-                data = h1_tag.get_text(strip=True)
-                data = data.replace(ip + ' - ', '').strip()
-                if data.lower() == 'not anonymous':
-                    data = 'Anonymous'
-                writer.writerow([ip, data])
-                print(f"{ip},{data}")
-            else:
-                logging.debug(f"No h1_tag found for IP: {ip}")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        logging.error(f"An error occurred: {e}")
+    async with session.get(url, timeout=30) as response:
+        if response.status == 429:
+            print(f"{ip}, Rate limit exceeded")
+            protonvpn_connect()
+            WaitUntilVPNConnected()
+            return
+        content = await response.text()
+        soup = BeautifulSoup(content, "html.parser")
+        h1_tag = soup.find("h1", class_="ddc mb-3 text-left")
+        if h1_tag:
+            data = h1_tag.get_text(strip=True).replace(ip + ' - ', '').strip()
+            if data.lower() == 'not anonymous':
+                data = 'Anonymous'
+            writer.writerow([ip, data])
+            print(f"{ip},{data}")
 
 async def fetch_all_ips(writer, start_ip, end_ip, subnet):
     async with aiohttp.ClientSession() as session:
-        tasks = [process_ip(session, writer, subnet + str(i), f"https://example.com/{subnet}{i}") for i in range(start_ip, min(end_ip, 256))]
+        tasks = [process_ip(session, writer, f"{subnet}{i}", f"https://example.com/{subnet}{i}") for i in range(start_ip, min(end_ip, 256))]
         await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
@@ -73,16 +51,10 @@ if __name__ == "__main__":
     with open(filename, 'a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['ip', 'name'])
-        continue_processing = True
-
         while start_ip < 256:
-            myvpn = r"us.protonvpn.net.udp.ovpn"
-            VPN("connect", myvpn)
+            protonvpn_connect()
             WaitUntilVPNConnected()
             end_ip = start_ip + 15
             asyncio.run(fetch_all_ips(writer, start_ip, end_ip, subnet))
             print(f"Data saved to {filename}")
-            logging.info(f"Data saved to {filename}")
-            VPN("disconnect", myvpn)
             start_ip = end_ip
-
