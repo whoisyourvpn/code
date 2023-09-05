@@ -7,6 +7,28 @@ import subprocess
 import requests
 from bs4 import BeautifulSoup
 
+def protonvpn_login(username, password):
+    command = f"sudo protonvpn login {username}"
+    proc = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc.stdin.write(password.encode('utf-8'))
+    proc.stdin.write(b'\n')
+    proc.stdin.flush()
+    stdout, stderr = proc.communicate()
+    if b"Successfully logged in" in stdout:
+        return True
+    return False
+
+# Prompt for ProtonVPN credentials
+username = input("Enter your ProtonVPN username: ")
+password = input("Enter your ProtonVPN password: ")
+
+# Log in to ProtonVPN
+if protonvpn_login(username, password):
+    print("Successfully logged in to ProtonVPN.")
+else:
+    print("Failed to log in to ProtonVPN.")
+    exit(1)
+
 def VPN(action):
     if action == 'connect':
         command = "sudo protonvpn c -r"
