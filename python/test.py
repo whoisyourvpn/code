@@ -6,17 +6,6 @@ from bs4 import BeautifulSoup
 import requests
 import logging
 import time
-import pexpect
-
-def protonvpn_login(username, password):
-    child = pexpect.spawn(f'protonvpn-cli login {username}')
-    child.expect('Password:')
-    child.sendline(password)
-    index = child.expect(['Successfully logged in.', 'Invalid username or password'], timeout=30)
-    if index == 0:
-        return True
-    else:
-        return False
 
 def protonvpn_connect():
     command = "sudo protonvpn-cli c -r"
@@ -39,7 +28,6 @@ async def process_ip(session, writer, ip, url):
     async with session.get(url, timeout=30) as response:
         if response.status == 429:
             print(f"{ip}, Rate limit exceeded")
-            protonvpn_disconnect()
             protonvpn_connect()
             WaitUntilVPNConnected()
             return
@@ -59,15 +47,6 @@ async def fetch_all_ips(writer, start_ip, end_ip, subnet):
         await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
-    username = input("Enter your ProtonVPN username: ")
-    password = input("Enter your ProtonVPN password: ")
-
-    if not protonvpn_login(username, password):
-        print("Failed to log in to ProtonVPN.")
-        exit(1)
-
-    print("Successfully logged in to ProtonVPN.")
-
     subnet = input("Enter subnet to scan (example: 198.7.61.): ")
     start_ip = int(input("Enter the first IP to scan (0-255): "))
     filename = subnet.replace('.', '-') + '.csv'
