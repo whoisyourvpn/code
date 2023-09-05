@@ -19,11 +19,11 @@ def protonvpn_login(username, password):
         return False
 
 def protonvpn_connect():
-    command = "sudo protonvpn c -r"
+    command = "sudo protonvpn-cli c -r"
     subprocess.run(command, shell=True)
 
 def protonvpn_disconnect():
-    command = "sudo protonvpn d"
+    command = "sudo protonvpn-cli d"
     subprocess.run(command, shell=True)
 
 def PublicIPAddress():
