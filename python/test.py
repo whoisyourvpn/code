@@ -6,16 +6,24 @@ from bs4 import BeautifulSoup
 import requests
 import logging
 import time
+import pexpect
 
 def protonvpn_login(username, password):
-    command = f"echo '{password}' | sudo -S protonvpn login {username}"
-    proc = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if b"Successfully logged in" in proc.stdout:
+    child = pexpect.spawn(f'protonvpn-cli login {username}')
+    child.expect('Password:')
+    child.sendline(password)
+    index = child.expect(['Successfully logged in.', 'Invalid username or password'], timeout=30)
+    if index == 0:
         return True
-    return False
+    else:
+        return False
 
 def protonvpn_connect():
-    command = "echo 'your_sudo_password_here' | sudo -S protonvpn c -r"
+    command = "sudo protonvpn c -r"
+    subprocess.run(command, shell=True)
+
+def protonvpn_disconnect():
+    command = "sudo protonvpn d"
     subprocess.run(command, shell=True)
 
 def PublicIPAddress():
@@ -31,6 +39,7 @@ async def process_ip(session, writer, ip, url):
     async with session.get(url, timeout=30) as response:
         if response.status == 429:
             print(f"{ip}, Rate limit exceeded")
+            protonvpn_disconnect()
             protonvpn_connect()
             WaitUntilVPNConnected()
             return
@@ -73,4 +82,6 @@ if __name__ == "__main__":
             end_ip = start_ip + 15
             asyncio.run(fetch_all_ips(writer, start_ip, end_ip, subnet))
             print(f"Data saved to {filename}")
+            protonvpn_disconnect()
+            time.sleep(20)
             start_ip = end_ip
