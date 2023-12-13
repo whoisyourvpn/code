@@ -1,8 +1,8 @@
 Sub Select100CellsInSheet()
     Dim currentCell As Range
     Dim ws As Worksheet
-    Dim startRow As Integer
-    Dim totalRows As Integer
+    Dim startRow As Long
+    Dim totalRows As Long
 
     Set ws = ThisWorkbook.Sheets("ipdb")
 
@@ -21,7 +21,7 @@ Sub Select100CellsInSheet()
         End If
 
         ' Select 100 cells including the current cell
-        ws.Range(currentCell, ws.Cells(startRow + 99, currentCell.Column)).Select
+        ws.Range(ws.Cells(startRow, currentCell.Column), ws.Cells(startRow + 99, currentCell.Column)).Select
     Else
         MsgBox "The active cell is not in the 'ipdb' sheet.", vbExclamation
     End If
