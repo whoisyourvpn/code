@@ -24,9 +24,12 @@ def main():
 
     missing_ips = get_missing_ips(input_ips, subnet)
 
-    print("\nMissing IPs:")
-    for ip in missing_ips:
-        print(ip)
+    # Save the results to a file, overwriting existing content
+    with open("results.txt", "w") as result_file:
+        for ip in missing_ips:
+            result_file.write(ip + "\n")
+
+    print("\nMissing IPs written to results.txt")
 
 if __name__ == "__main__":
     main()
