@@ -17,7 +17,10 @@ def main():
     with open("ips.txt", "r") as file:
         input_ips = [line.strip() for line in file if line.strip()]
 
-    subnet = input("Enter the subnet in CIDR notation (e.g., 1.1.1.0/24): ")
+    # Use the first IP from the file and append '.0/24' to create the subnet
+    first_ip = input_ips[0].split('.')[0:3]
+    first_ip.append('0/24')
+    subnet = ".".join(first_ip)
 
     missing_ips = get_missing_ips(input_ips, subnet)
 
